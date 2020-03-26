@@ -33,12 +33,12 @@ def parsePort(port):
 if __name__ == '__main__':
 
     # Set client mode (UDP/TCP)
-    mode = "UDP"
-    if (mode != "TCP") & (mode != "UDP"):
+    mode = input("Enter 'TCP' or 'UDP' to set client mode: ")
+    if (mode.upper() != "TCP") & (mode.upper() != "UDP"):
         print("Incorrect mode set. TCP and UDP are the only valid options. Exiting!")
         sys.exit()
     else:
-        print("Running in " + mode + " mode")
+        print("Client running in " + mode.upper() + " mode\n")
 
     # Ensure correct number of command line arguments and extract data from them
     testArgLength()
@@ -51,30 +51,34 @@ if __name__ == '__main__':
     sInfo = (str(ip), portNum)
     # sInfo = (socket.gethostname(), portNum)
 
-    if mode == "TCP":
+    # Connect to server using TCP or send messages using UDP
+    if mode.upper() == "TCP":
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         try:
             sock.connect(sInfo)
             print("Connection established")
             for a in range(0, exeCount):
-                sock.send(bytes(command))
+                sock.send(bytes(command, 'utf-8'))
                 response = sock.recv(1024)
                 print("Received: " + str(response.decode()))
-                time.sleep(timeDelay)
+                if a != exeCount - 1:
+                    time.sleep(timeDelay)
         except ConnectionError as e:
             sys.exit(e)
         finally:
+            print("Connection closed")
             sock.close()
 
-    if mode == "UDP":
+    if mode.upper() == "UDP":
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         for a in range(0, exeCount):
             sock.sendto(bytes(command, 'utf-8'), sInfo)
             response, address = sock.recvfrom(1024)
             print("Received: " + str(response.decode()))
-            time.sleep(timeDelay)
+            if a != exeCount - 1:
+                time.sleep(timeDelay)
         sock.close()
 
 
